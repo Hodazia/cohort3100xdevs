@@ -18,19 +18,31 @@ app.post("/signup", async function(req, res) {
     const name = req.body.name;
     // promisify the fs function call
 
-    const hashedPassword = await bcrypt.hash(password,5);    //the number should not be a very big number
-    console.log(hashedPassword);
+    let errorThrown = false;
+    try {
+        const hashedPassword = await bcrypt.hash(password,5);    //the number should not be a very big number
+        console.log(hashedPassword);
 
-    await mongoose.connect(mongoURI);
-    await UserModel.create({
-        email: email,
-        password: hashedPassword,
-        name: name
-    });
-    
-    res.json({
-        message: "You are signed up"
-    })
+        await mongoose.connect(mongoURI);
+        await UserModel.create({
+            email: email,
+            password: hashedPassword,
+            name: name
+        });
+    }
+    catch(error)
+    {
+        res.json({
+            message: "User already exists"}
+        );
+        errorThrown = true;
+    }
+    if(!errorThrown)
+    {
+        res.json({
+            message: "You are signed up"
+        }) 
+    }
 });
 
 
@@ -40,10 +52,18 @@ app.post("/signin", async function(req, res) {
 
     const response = await UserModel.findOne({
         email: email,
-        password: password,
     });
 
-    if (response) {
+    if(!response)
+    {
+        res.status(403).json({
+            message:"User does not exist in our db"
+        })
+    }
+
+    const passwordMatch = await bcrypt.compare(password,response.password);
+
+    if (passwordMatch) {
         const token = jwt.sign({
             id: response._id.toString()
         }, JWT_SECRET);

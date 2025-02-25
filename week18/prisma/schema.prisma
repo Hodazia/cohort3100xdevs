@@ -1,0 +1,41 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+// create a schema / model/ table
+
+model User {
+  id Int @default(autoincrement())  @id
+  username String @unique
+  passowrd String
+  age Int
+  city String
+}
+
+// now after u have defined the schema, migrate the DB, generate the SQL, run the SQL on the DB
+// run command npx prisma migrate dev, and give a name to this migration
+/* @id means it is the primary key, 
+new folder migrations will be created, and in it there will be a sql file, 
+
+Assignment add a TODOS TABLE, every change u make u need to migrate it to the DB
+
+
+npx primsa generate
+It will generate prisma client, 
+*/
+model Todo{
+  id Int @default(autoincrement())  @id
+  title String
+  description String
+  done Boolean
+  userid Int
+}
+
+
+
+
